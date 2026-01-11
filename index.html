@@ -67,7 +67,7 @@
         }
         .btn-download:hover { background: var(--comment); }
     </style>
-    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.0/vision_bundle.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision/vision_bundle.js" crossorigin="anonymous"></script>
 </head>
 <body>
 
@@ -95,7 +95,62 @@
 </div>
 
 <script type="module">
-    // --- Elements ---
+    // --- Face ---
+	const faceModel = "https://storage.googleapis.com/mediapipe-models/face_detector/blaze_face_short_range/float16/1/blaze_face_short_range.tflite";
+
+	import { FaceDetector, FilesetResolver } from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.0";
+	let faceDetector;
+	const initializeFaceDetector = async () => {
+		const vision = await FilesetResolver.forVisionTasks("https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.0/wasm");
+		faceDetector = await FaceDetector.createFromOptions(vision, {
+		baseOptions: {
+			modelAssetPath: faceModel,
+			delegate: "GPU"
+		},
+		runningMode: "IMAGE"
+		});
+	};
+
+	initializeFaceDetector();
+
+	async function detectFaces() {
+		if (!faceDetector) return;
+		const detections = faceDetector.detect(canvas).detections;
+		const overlay = document.getElementById('overlay');
+		overlay.innerHTML = '';
+
+		detections.forEach((detection) => {
+			const box = detection.boundingBox;
+			const left = (box.originX / canvas.width) * 100;
+			const top = (box.originY / canvas.height) * 100;
+			const width = (box.width / canvas.width) * 100;
+			const height = (box.height / canvas.height) * 100;
+			const drawBox = document.createElement('div');
+			Object.assign(drawBox.style, {
+			position: 'absolute',
+			left: `${left}%`,
+			top: `${top}%`,
+			width: `${width}%`,
+			height: `${height}%`,
+			border: '2px solid var(--purple)',
+			backgroundColor: 'rgba(189, 147, 249, 0.2)',
+			cursor: 'pointer',
+			pointerEvents: 'auto',
+			zIndex: '10',
+			boxSizing: 'border-box',
+			borderRadius: '4px'
+			});
+			
+			drawBox.onclick = () => {
+				drawBox.style.borderColor = 'var(--cyan)';
+				console.log("Face metadata:", detection.categories[0]);
+			};
+			overlay.appendChild(drawBox);
+    });
+}
+
+
+	// --- Elements ---
     const dropZone = document.getElementById('drop-zone');
     const fileInput = document.getElementById('file-input');
     const canvas = document.getElementById('canvas');
@@ -156,6 +211,8 @@
             Size: <strong>${img.naturalWidth} x ${img.naturalHeight}px</strong><br>`;
 
         resultArea.classList.remove('hidden');
+
+	detectFaces();
     }
 
 
