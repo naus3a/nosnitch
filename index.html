@@ -67,8 +67,7 @@
         }
         .btn-download:hover { background: var(--comment); }
     </style>
-    <script defer src="https://cdn.jsdelivr.net/npm/@vladmandic/face-api/dist/face-api.js"></script>
-
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.0/vision_bundle.js" crossorigin="anonymous"></script>
 </head>
 <body>
 
@@ -95,7 +94,7 @@
     </div>
 </div>
 
-<script>
+<script type="module">
     // --- Elements ---
     const dropZone = document.getElementById('drop-zone');
     const fileInput = document.getElementById('file-input');
@@ -170,38 +169,6 @@
     };
 
     // --- Faces ---
-    async function detectFaces(img) {
-    	await face_api.nets.tinyFaceDetector.loadFromUri('https://cdn.jsdelivr.net/npm/@vladmandic/face-api/model/');
-
-    	const detections = await face_api.detectAllFaces(canvas, new face_api.TinyFaceDetectorOptions());
-
-    	const overlay = document.getElementById('overlay');
-    	overlay.innerHTML = '';
-
-    	const displaySize = { width: canvas.clientWidth, height: canvas.clientHeight };
-    	const resizedDetections = face_api.resizeResults(detections, displaySize);
-
-    	resizedDetections.forEach(detection => {
-        	const box = detection.box;
-        	const drawBox = document.createElement('div');
-
-        	Object.assign(drawBox.style, {
-            		position: 'absolute',
-            		left: `${box.x}px`,
-            		top: `${box.y}px`,
-            		width: `${box.width}px`,
-            		height: `${box.height}px`,
-            		border: '2px solid #bd93f9',
-            		backgroundColor: 'rgba(189, 147, 249, 0.2)',
-            		cursor: 'pointer',
-            		pointerEvents: 'auto',
-            		zIndex: '10'
-        	});
-
-        	drawBox.onclick = () => alert(`Face detected at ${Math.round(box.x)}, ${Math.round(box.y)}`);
-        	overlay.appendChild(drawBox);
-    	});
-}
 
 </script>
 
