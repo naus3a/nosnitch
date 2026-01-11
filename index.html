@@ -95,7 +95,8 @@
 </div>
 
 <script type="module">
-    // --- Face ---
+
+	// --- Face ---
 	const faceModel = "https://storage.googleapis.com/mediapipe-models/face_detector/blaze_face_short_range/float16/1/blaze_face_short_range.tflite";
 
 	import { FaceDetector, FilesetResolver } from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.0";
@@ -232,14 +233,27 @@
 
     // --- Download Handler ---
     downloadBtn.onclick = () => {
-        const dataUrl = canvas.toDataURL(originalFileType, 0.92);
-        const link = document.createElement('a');
-        link.download = `${originalFileName}_nosnitch.${originalFileType === 'image/png' ? 'png' : 'jpg'}`;
-        link.href = dataUrl;
-        link.click();
+       faceDetections.forEach(detection =>{
+		if(detection.isBlacked){
+			const box = detection.boundingBox;
+			ctx.fillStyle = "black";
+			ctx.fillRect(box.originX, box.originY, box.width, box.height);
+		}
+       }); 
+
+	canvas.toBlob((blob)=>{
+		const url = URL.createObjectURL(blob);
+		const link = document.createElement('a');
+		link.href = url;
+		link.download = `${originalFileName}_nosnitch.${originalFileType === 'image/png' ? 'png' : 'jpg'}`;
+		document.body.appendChild(link);
+		link.click();
+		setTimeout(()=>{
+			URL.revokeObjectURL(url);
+		}, 100);
+	}, originalFileType, 0.92);
     };
 
-    // --- Faces ---
 
 </script>
 
