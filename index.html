@@ -84,8 +84,12 @@
             <div class="success-text">✓ Metadata Stripped Successfully</div>
             <div class="dim-info" id="dim-info">Looking up sizes...</div>
             
-            <canvas id="canvas"></canvas>
-            <br>
+	    <div id="wrapper" style="position: relative; width: 100%;">
+            	<canvas id="canvas"></canvas>
+		<div id="overlay" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none;"></div>
+	    </div>
+
+	    <br>
             <button id="download-btn" class="btn-download">Download Clean Image</button>
         </div>
     </div>
