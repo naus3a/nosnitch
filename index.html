@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>[noSnitch]</title>
+    <style>
+	:root {
+    		--bg: #282a36;
+    		--current-line: #44475a;
+    		--fg: #f8f8f2;
+    		--comment: #6272a4;
+    		--cyan: #8be9fd;
+    		--purple: #bd93f9;
+	}
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: var(--bg);
+	    color: var(--fg);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .container {
+            background: var(--current-line);
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            max-width: 600px;
+            width: 100%;
+            text-align: center;
+            box-sizing: border-box;
+        }
+        h2 { margin-top: 0; }
+        #drop-zone {
+            border: 3px dashed #cbd5e0;
+            padding: 2rem 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: 0.2s ease-in-out;
+            background: #fafafa;
+            margin-bottom: 1.5rem;
+        }
+        #drop-zone:hover { border-color: #4299e1; background: #ebf8ff; }
+        .hidden { display: none; }
+        
+        canvas {
+            width: 100% !important; /* Force it to fit container width */
+            height: auto !important; /* Maintain aspect ratio */
+            border-radius: 4px;
+            border: 1px solid var(--bg);
+            margin-top: 1rem;
+            /* Ensure it doesn't get wider than the container on large screens */
+            max-width: 100%; 
+        }
+        /* ------------------------- */
+
+        #status-box { margin-top: 1rem; padding-top: 1rem; border-top: 2px solid #eee; }
+        .success-text { color: #38a169; font-weight: bold; margin-bottom: 0.5rem; }
+        .dim-info { font-size: 0.9rem; color: #718096; margin-bottom: 1rem; }
+        .btn-download {
+            background: var(--comment); color: var(--fg); border: none;
+            padding: 12px 24px; border-radius: 6px; font-size: 1rem; font-weight: 600;
+            cursor: pointer; transition: background 0.2s;
+        }
+        .btn-download:hover { background: var(--comment); }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>[noSnitch]</h2>
+    <div id="drop-zone">
+        <p style="margin: 0; color: #718096;">Click/Tap or File Drop, to load an image</p>
+        <input type="file" id="file-input" class="hidden" accept="image/png, image/jpeg, image/webp">
+    </div>
+
+    <div id="result-area" class="hidden">
+        <div id="status-box">
+            <div class="success-text">✓ Metadata Stripped Successfully</div>
+            <div class="dim-info" id="dim-info">Looking up sizes...</div>
+            
+            <canvas id="canvas"></canvas>
+            <br>
+            <button id="download-btn" class="btn-download">Download Clean Image</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // --- Elements ---
+    const dropZone = document.getElementById('drop-zone');
+    const fileInput = document.getElementById('file-input');
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d', { willReadFrequently: true });
+    const resultArea = document.getElementById('result-area');
+    const downloadBtn = document.getElementById('download-btn');
+    const dimInfo = document.getElementById('dim-info');
+
+    let originalFileName = "image";
+    let originalFileType = "image/jpeg";
+
+    // --- Event Listeners ---
+    dropZone.onclick = () => fileInput.click();
+
+    // Handle Drag and Drop visual cues
+    dropZone.ondragover = (e) => { e.preventDefault(); dropZone.style.borderColor = '#4299e1'; background = '#ebf8ff'; };
+    dropZone.ondragleave = () => { dropZone.style.borderColor = '#cbd5e0'; background = '#fafafa'; };
+    dropZone.ondrop = (e) => {
+        e.preventDefault();
+        dropZone.style.borderColor = '#cbd5e0'; background = '#fafafa';
+        if (e.dataTransfer.files.length) handleFile(e.dataTransfer.files[0]);
+    };
+
+    fileInput.onchange = (e) => {
+        if (e.target.files.length) handleFile(e.target.files[0]);
+    };
+
+    // --- Core Logic ---
+    function handleFile(file) {
+        // Basic validation
+        if (!file.type.startsWith('image/')) { alert('Please select an image file.'); return; }
+        
+        originalFileName = file.name.split('.')[0];
+        originalFileType = file.type === 'image/png' ? 'image/png' : 'image/jpeg';
+
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            const img = new Image();
+            img.onload = () => {
+               processImageOnCanvas(img);
+            };
+            img.src = event.target.result;
+        };
+        reader.readAsDataURL(file);
+    }
+
+
+    function processImageOnCanvas(img) {
+        canvas.width = img.naturalWidth;
+        canvas.height = img.naturalHeight;
+
+        ctx.drawImage(img, 0, 0);
+        
+        const displayWidth = canvas.clientWidth;
+        const displayHeight = canvas.clientHeight;
+        
+        dimInfo.innerHTML = `
+            Size: <strong>${img.naturalWidth} x ${img.naturalHeight}px</strong><br>`;
+
+        resultArea.classList.remove('hidden');
+    }
+
+
+    // --- Download Handler ---
+    downloadBtn.onclick = () => {
+        const dataUrl = canvas.toDataURL(originalFileType, 0.92);
+        const link = document.createElement('a');
+        link.download = `${originalFileName}_nosnitch.${originalFileType === 'image/png' ? 'png' : 'jpg'}`;
+        link.href = dataUrl;
+        link.click();
+    };
+</script>
+
+</body>
+</html>
+
