@@ -112,14 +112,25 @@
 	};
 
 	initializeFaceDetector();
+	
+	let faceDetections = [];
 
 	async function detectFaces() {
 		if (!faceDetector) return;
-		const detections = faceDetector.detect(canvas).detections;
+		let result = faceDetector.detect(canvas).detections;
+		faceDetections = result.map(d =>(
+			{ ...d, isBlacked: false}
+		));
+		renderFaceOverlays();
+	}
+
+	function renderFaceOverlays(){
 		const overlay = document.getElementById('overlay');
+		const colBoxOff = 'rgba(189, 147, 249, 0.2)';
+		const colBoxOn = 'rgba(0,0,0,255)';
 		overlay.innerHTML = '';
 
-		detections.forEach((detection) => {
+		faceDetections.forEach((detection) => {
 			const box = detection.boundingBox;
 			const left = (box.originX / canvas.width) * 100;
 			const top = (box.originY / canvas.height) * 100;
@@ -133,7 +144,7 @@
 			width: `${width}%`,
 			height: `${height}%`,
 			border: '2px solid var(--purple)',
-			backgroundColor: 'rgba(189, 147, 249, 0.2)',
+			backgroundColor: detection.isBlacked? colBoxOn : colBoxOff,
 			cursor: 'pointer',
 			pointerEvents: 'auto',
 			zIndex: '10',
@@ -142,7 +153,10 @@
 			});
 			
 			drawBox.onclick = () => {
+				detection.isBlacked = !detection.isBlacked;
 				drawBox.style.borderColor = 'var(--cyan)';
+				renderFaceOverlays();
+
 				console.log("Face metadata:", detection.categories[0]);
 			};
 			overlay.appendChild(drawBox);
