@@ -90,8 +90,8 @@
 
 	    <br>
             <div style="margin-top: 10px; display: flex; gap: 10px; justify-content: center;">
-		    <button id="undo-btn" class="btn-download" style="background: var(--bg);">Undo Stroke</button>
-		<button id="clear-btn" class="btn-download" style="background: var(--bg);">Clear All</button>
+		    <button id="undo-btn" class="btn-download" style="background: var(--bg); width: 130px">Undo Stroke</button>
+		<button id="clear-btn" class="btn-download" style="background: var(--bg); width 150px;">Clear All</button>
 	    </div>
 	    <br><br>
 	    <button id="download-btn" class="btn-download">Download Clean Image</button>
@@ -99,13 +99,96 @@
     </div>
 </div>
 
-<script type="module">
+<script type="module"> 
+
+	// --- Elements ---
+    	const dropZone = document.getElementById('drop-zone');
+    	const fileInput = document.getElementById('file-input');
+    	const canvas = document.getElementById('canvas');
+    	const ctx = canvas.getContext('2d', { willReadFrequently: true });
+    	const resultArea = document.getElementById('result-area');
+    	const downloadBtn = document.getElementById('download-btn');
+    	const dimInfo = document.getElementById('dim-info');
+
+    	let originalFileName = "image";
+    	let originalFileType = "image/jpeg";
+
+
+	// --- Paint ---
+	let paths = [];
+	let currentPath = [];
+	let isDrawing = false;
+	let backupImg  = null;
+	
+	function stopDrawing(){
+		if(!isDrawing) return;
+		isDrawing = false;
+		paths.push([...currentPath]);
+	}
+
+	function startDrawing(e){
+		if(isDrawing) return;
+		isDrawing = true;
+		currentPath = [];
+		addPoint(e);
+	}
+
+	function drawMove(e){
+		if(!isDrawing) return;
+		addPoint(e);
+		redrawCanvas();
+	}
+
+	function addPoint(e){
+		const rect = canvas.getBoundingClientRect();
+		const scaleX = canvas.width / rect.width;
+		const scaleY = canvas.height / rect.height;
+		const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+		const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+		currentPath.push({
+			x: (clientX - rect.left) * scaleX,
+			y: (clientY - rect.top) * scaleY
+			});
+	}
+
+	function redrawCanvas(){
+		ctx.drawImage(backupImg, 0, 0);
+		ctx.strokeStyle = "black";
+    		ctx.lineWidth = 20;
+		ctx.lineJoin = "round";
+		ctx.lineCap = "round";
+		const drawPath = (path) => {
+			if (path.length < 2) return;
+			ctx.beginPath();
+			ctx.moveTo(path[0].x, path[0].y);
+			for (let i = 1; i < path.length; i++) {
+				ctx.lineTo(path[i].x, path[i].y);
+			}
+			ctx.stroke();
+		};
+		paths.forEach(drawPath);
+		if (isDrawing) drawPath(currentPath);
+	}
+
+	canvas.addEventListener('mousedown', startDrawing);
+	canvas.addEventListener('mousemove', drawMove);
+	window.addEventListener('mouseup', stopDrawing);
+
+	canvas.addEventListener('touchstart', (e) => { e.preventDefault(); startDrawing(e); }, {passive: false});
+	canvas.addEventListener('touchmove', (e) => { e.preventDefault(); drawMove(e); }, {passive: false});
+	canvas.addEventListener('touchend', stopDrawing);
+
+	document.getElementById('undo-btn').onclick = () => { paths.pop(); redrawCanvas(); };
+	document.getElementById('clear-btn').onclick = () => { paths = []; redrawCanvas(); };
+
 
 	// --- Face ---
 	const faceModel = "https://storage.googleapis.com/mediapipe-models/face_detector/blaze_face_short_range/float16/1/blaze_face_short_range.tflite";
 
 	import { FaceDetector, FilesetResolver } from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.0";
-	let faceDetector;
+	
+	let faceDetector;;
+
 	const initializeFaceDetector = async () => {
 		const vision = await FilesetResolver.forVisionTasks("https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.0/wasm");
 		faceDetector = await FaceDetector.createFromOptions(vision, {
@@ -170,19 +253,7 @@
 }
 
 
-	// --- Elements ---
-    const dropZone = document.getElementById('drop-zone');
-    const fileInput = document.getElementById('file-input');
-    const canvas = document.getElementById('canvas');
-    const ctx = canvas.getContext('2d', { willReadFrequently: true });
-    const resultArea = document.getElementById('result-area');
-    const downloadBtn = document.getElementById('download-btn');
-    const dimInfo = document.getElementById('dim-info');
-
-    let originalFileName = "image";
-    let originalFileType = "image/jpeg";
-
-    // --- Event Listeners ---
+	// --- Event Listeners ---
     dropZone.onclick = () => fileInput.click();
 
     // Handle Drag and Drop visual cues
@@ -219,6 +290,8 @@
 
 
     function processImageOnCanvas(img) {
+	backupImg = img;
+
         canvas.width = img.naturalWidth;
         canvas.height = img.naturalHeight;
 
@@ -238,6 +311,8 @@
 
     // --- Download Handler ---
     downloadBtn.onclick = () => {
+       redrawCanvas();
+
        faceDetections.forEach(detection =>{
 		if(detection.isBlacked){
 			const box = detection.boundingBox;
