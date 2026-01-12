@@ -7,6 +7,12 @@
 * **everything happens locally**: no cloud bullshit, nothing leaves your device
 * it **saves cleaned up images**, adding `_nosnitch` to the original file name, so they're easy to find
 
+Use it from here:
+
+https://naus3a.github.io/nosnitch/
+
+or host it wherever you want.
+
 ## Warning
 Consider this a POC, for theoritical/research purposes. Don't do anything stoopid with it. Stay safe.
 
