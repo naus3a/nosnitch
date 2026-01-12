@@ -80,7 +80,8 @@
 
     <div id="result-area" class="hidden">
         <div id="status-box">
-            <div class="success-text">✓ Metadata Stripped Successfully</div>
+		<div class="instructions" id="instructions">Touch faces to toggle them; scratch anywhere on the image to paint it black</div><p>
+            <div class="success-text" id="success-text">✓ Metadata Stripped Successfully</div>
             <div class="dim-info" id="dim-info">Looking up sizes...</div>
             
 	    <div id="wrapper" style="position: relative; width: 100%;">
@@ -100,7 +101,6 @@
 </div>
 
 <script type="module"> 
-
 	// --- Elements ---
     	const dropZone = document.getElementById('drop-zone');
     	const fileInput = document.getElementById('file-input');
@@ -109,8 +109,10 @@
     	const resultArea = document.getElementById('result-area');
     	const downloadBtn = document.getElementById('download-btn');
     	const dimInfo = document.getElementById('dim-info');
+	const successText = document.getElementById('success-text'); 
+    	
 
-    	let originalFileName = "image";
+	let originalFileName = "image";
     	let originalFileType = "image/jpeg";
 
 
@@ -299,13 +301,15 @@
         
         const displayWidth = canvas.clientWidth;
         const displayHeight = canvas.clientHeight;
-        
+
         dimInfo.innerHTML = `
             Size: <strong>${img.naturalWidth} x ${img.naturalHeight}px</strong><br>`;
 
         resultArea.classList.remove('hidden');
 
 	detectFaces();
+
+	successText.innerHTML = `✓ Metadata Stripped <br>✓ `+faceDetections.length+` faces found`;
     }
 
 
