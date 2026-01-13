@@ -121,7 +121,8 @@
 	let currentPath = [];
 	let isDrawing = false;
 	let backupImg  = null;
-	
+	let strokeThickness = 40;
+
 	function stopDrawing(){
 		if(!isDrawing) return;
 		isDrawing = false;
@@ -156,7 +157,7 @@
 	function redrawCanvas(){
 		ctx.drawImage(backupImg, 0, 0);
 		ctx.strokeStyle = "black";
-    		ctx.lineWidth = 20;
+    		ctx.lineWidth = strokeThickness;
 		ctx.lineJoin = "round";
 		ctx.lineCap = "round";
 		const drawPath = (path) => {

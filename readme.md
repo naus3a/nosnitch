@@ -1,5 +1,6 @@
 # noSnitch
-`noSnitch` is an image scraper that runs in your browser:
+(nosnitch.gif)
+`noSnitch` is an image scrubber that runs in your browser:
 * it **removes metadata** from images
 * it **anonymizes people**: tap on people faces to put a chunky black square on them
 * it allows you to **remove details you don't want to share**: just scratch on them with you mouse/finger
