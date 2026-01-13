@@ -1,5 +1,5 @@
 # noSnitch
-(nosnitch.gif)
+[example](nosnitch.gif)
 `noSnitch` is an image scrubber that runs in your browser:
 * it **removes metadata** from images
 * it **anonymizes people**: tap on people faces to put a chunky black square on them
